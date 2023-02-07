@@ -1,6 +1,5 @@
-from typing import Optional
+from typing import Optional,List
 from fastapi import FastAPI, Response, status, HTTPException,Depends
-
 from fastapi.params import Body
 from pydantic import BaseModel
 from random import randrange
@@ -8,9 +7,11 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 import time
 
-from . import  models
+from . import  models,schemas,utils
 from .database import engine,get_db
 from sqlalchemy.orm import Session
+from .routers import post,user,auth
+
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -18,10 +19,7 @@ models.Base.metadata.create_all(bind=engine)
 app = FastAPI()
 
 
-class Posts(BaseModel):
-    title: str
-    content: str
-    # id:int
+
 
 while True : 
 
@@ -35,32 +33,11 @@ while True :
         print("Error",error)
         time.sleep(3)
 
+
+app.include_router(post.router)
+app.include_router(user.router)
+app.include_router(auth.router)
+
 @app.get("/")
 def login():
     return {"message": "Welcome to API"}
-
-
-@app.get("/posts")
-def posts(db: Session = Depends(get_db)):
-    
-    posts = db.query(models.Post).all()
-    return {"data": posts}
-
-
-@app.post("/posts", status_code=status.HTTP_201_CREATED)
-def create_post(post: Posts,db: Session = Depends(get_db)):
-    new_post = models.Post(**post.dict())
-    db.add(new_post)
-    db.commit()
-    db.refresh(new_post)
-    return {"data": new_post}
-
-
-@app.get("/posts/{id}")
-def get_post(id: int, response: Response,db: Session = Depends(get_db)):
-    post= db.query(models.Post).filter(models.Post.id==id).first()
-    if not post:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="page not found")
-
-    return {"Post detail": post}
