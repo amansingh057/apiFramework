@@ -34,9 +34,9 @@ while True :
         time.sleep(3)
 
 
-app.include_router(post.router)
-app.include_router(user.router)
-app.include_router(auth.router)
+app.include_router(post.router) #Getpost
+app.include_router(user.router) #SIGNUP
+app.include_router(auth.router) #LOGIN
 
 @app.get("/")
 def login():

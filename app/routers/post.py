@@ -18,9 +18,9 @@ def posts(db: Session = Depends(get_db),user_id:int = Depends(oauth2.get_curr_us
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED,response_model=schemas.ResponsePost)
-def create_post(post: schemas.CreatePost,db: Session = Depends(get_db),user_id:int = Depends(oauth2.get_curr_user)):
+def create_post(post: schemas.CreatePost,db: Session = Depends(get_db),curr_user:int = Depends(oauth2.get_curr_user)):
 
-    print(user_id)
+    print(curr_user.email)
     new_post = models.Post(**post.dict())
     db.add(new_post)
     db.commit()
@@ -29,7 +29,7 @@ def create_post(post: schemas.CreatePost,db: Session = Depends(get_db),user_id:i
 
 
 @router.get("/{id}",response_model=schemas.ResponsePost)
-def get_post(id: int, response: Response,db: Session = Depends(get_db),user_id:int = Depends(oauth2.get_curr_user)):
+def get_post(id: int, response: Response,db: Session = Depends(get_db),curr_user:int = Depends(oauth2.get_curr_user)):
     post= db.query(models.Post).filter(models.Post.id==id).first()
     if not post:
         raise HTTPException(
